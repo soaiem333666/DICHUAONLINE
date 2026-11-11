@@ -1,640 +1,530 @@
 <!DOCTYPE html>
-<html lang="vi" class="scroll-smooth">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cổng Nội Bộ - Bộ Phận Văn Hoá Phường An Cựu</title>
-    <!-- Tailwind CSS -->
+    <title>Đi Chùa Online - Dâng Hương & Cầu An Trực Tuyến</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons -->
+    <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Google Fonts: Merriweather & Montserrat -->
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
-        .bg-portal {
-            background: linear-gradient(135deg, #0b132b 0%, #1c2541 40%, #3a506b 100%);
+        body {
+            font-family: 'Merriweather', serif;
+            background: radial-gradient(circle at center, #1a0f07 0%, #080402 100%);
+            color: #f3e5ab;
+            min-height: 100vh;
         }
-        .glass-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(16px);
+        .font-sans-custom {
+            font-family: 'Montserrat', sans-serif;
         }
-        .scanner-line {
-            height: 3px;
-            background: linear-gradient(90deg, transparent, #10b981, transparent);
-            animation: scan 2s infinite ease-in-out;
+        /* Hiệu ứng Hào Quang Phật */
+        .halo-effect {
+            box-shadow: 0 0 60px 20px rgba(234, 179, 8, 0.4), 0 0 100px 40px rgba(245, 158, 11, 0.2);
+            animation: pulse-halo 4s infinite alternate ease-in-out;
         }
-        @keyframes scan {
-            0% { top: 0%; }
-            50% { top: 95%; }
-            100% { top: 0%; }
+        @keyframes pulse-halo {
+            0% { box-shadow: 0 0 50px 15px rgba(234, 179, 8, 0.3), 0 0 90px 30px rgba(245, 158, 11, 0.15); }
+            100% { box-shadow: 0 0 80px 30px rgba(234, 179, 8, 0.6), 0 0 120px 50px rgba(245, 158, 11, 0.3); }
+        }
+        /* Hiệu ứng Ngọn Nến Lung Linh */
+        .flame {
+            width: 14px;
+            height: 24px;
+            background: linear-gradient(to top, #ff4500, #ffa500, #ffff00, #ffffff);
+            border-radius: 50% 50% 20% 20%;
+            animation: flicker 0.1s infinite alternate;
+            box-shadow: 0 0 15px #ffa500, 0 0 25px #ff4500;
+        }
+        @keyframes flicker {
+            0% { transform: scale(1) rotate(-2deg); opacity: 0.9; }
+            100% { transform: scale(1.08) rotate(2deg); opacity: 1; }
+        }
+        /* Canvas Khói Hương */
+        #incenseCanvas {
+            pointer-events: none;
+        }
+        /* Animation niệm Phật nảy lên */
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-80px) scale(1.2); }
+        }
+        .floating-text {
+            position: absolute;
+            animation: floatUp 1.8s ease-out forwards;
+            pointer-events: none;
+            color: #fef08a;
+            font-weight: bold;
+            text-shadow: 0 0 8px rgba(0,0,0,0.8), 0 0 12px rgba(234,179,8,0.8);
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1c140e;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #b45309;
+            border-radius: 3px;
         }
     </style>
 </head>
-<body class="bg-slate-100 text-slate-800 antialiased min-h-screen flex flex-col">
+<body class="flex flex-col justify-between min-h-screen relative overflow-x-hidden">
 
-    <!-- ==================== HEADER ĐẲNG CẤP ==================== -->
-    <header class="bg-portal text-white shadow-2xl sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 py-3.5 flex justify-between items-center border-b border-white/10">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-400 to-yellow-200 flex items-center justify-center shadow-lg shadow-amber-500/20 text-blue-950 font-black text-xl">
-                    <i class="fa-solid fa-landmark"></i>
-                </div>
-                <div>
-                    <h1 class="font-extrabold text-base sm:text-xl tracking-tight text-white">
-                        BỘ PHẬN VĂN HOÁ - XÃ HỘI
-                    </h1>
-                    <p class="text-[11px] sm:text-xs text-blue-200 font-medium">Trung tâm Dịch vụ sự nghiệp công Phường An Cựu</p>
-                </div>
-            </div>
+    <!-- Canvas Hiệu Ứng Khói Hương -->
+    <canvas id="incenseCanvas" class="absolute inset-0 z-10 w-full h-full"></canvas>
 
-            <!-- Trạng thái IP & Người dùng PC -->
-            <div class="hidden md:flex items-center gap-4">
-                <div class="bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/10 text-xs flex items-center gap-2">
-                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-                    <span>IP Văn phòng: <b id="userIpDisplay" class="text-amber-300">Đang kiểm tra...</b></span>
-                </div>
-                <div id="userHeaderStatus"></div>
-            </div>
-
-            <!-- Nút Toggle Menu Mobile -->
-            <button onclick="toggleMobileNav()" class="md:hidden text-white hover:text-amber-300 p-2">
-                <i class="fa-solid fa-bars-staggered text-xl"></i>
-            </button>
-        </div>
-
-        <!-- Menu Điều Hướng Responsive -->
-        <nav id="mobileNav" class="hidden md:block bg-blue-950/90 backdrop-blur-md border-t border-white/5">
-            <div class="max-w-7xl mx-auto px-4 py-2 flex flex-col md:flex-row justify-between items-center text-xs font-semibold gap-2">
-                <div class="flex flex-wrap gap-2 sm:gap-6 w-full md:w-auto">
-                    <a href="#diemdanh" class="hover:text-amber-300 text-amber-400 py-1 flex items-center gap-1.5">
-                        <i class="fa-solid fa-camera-retro text-emerald-400"></i> Điểm Danh AI Face Cam
-                    </a>
-                    <a href="#lichlamviec" class="hover:text-amber-300 py-1 flex items-center gap-1.5">
-                        <i class="fa-solid fa-calendar-week text-blue-400"></i> Lịch Công Tác Tuần
-                    </a>
-                    <a href="#thongke" class="hover:text-amber-300 py-1 flex items-center gap-1.5">
-                        <i class="fa-solid fa-chart-pie text-purple-400"></i> Thống Kê Ngày Công
-                    </a>
-                    <a href="#donbaonghi" class="hover:text-amber-300 py-1 flex items-center gap-1.5">
-                        <i class="fa-solid fa-file-pen text-amber-400"></i> Đăng Ký Báo Nghỉ / Trực
-                    </a>
-                </div>
-                <div id="clockDisplay" class="text-[11px] text-blue-300 font-normal"></div>
-            </div>
-        </nav>
+    <!-- Header / Tiêu Đề Trang -->
+    <header class="relative z-20 text-center py-6 px-4 bg-black/40 backdrop-blur-md border-b border-amber-900/40">
+        <h1 class="text-3xl md:text-5xl font-bold tracking-wide text-amber-300 drop-shadow-[0_2px_10px_rgba(217,119,6,0.5)]">
+            🙏 ĐI CHÙA ONLINE 🙏
+        </h1>
+        <p class="text-sm md:text-base text-amber-200/80 mt-2 font-sans-custom italic">
+            Tĩnh Tâm - Dâng Hương - Cầu An - Tích Tụ Công Đức
+        </p>
     </header>
 
-    <!-- ==================== NỘI DUNG CHÍNH ==================== -->
-    <main class="max-w-7xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6 flex-grow">
-
-        <!-- CỘT TRÁI: TÀI KHOẢN & ĐIỂM DANH KHUÔN MẶT AI (5 Cột) -->
-        <aside class="lg:col-span-5 space-y-6">
-
-            <!-- CARD ĐIỂM DANH FACE RECOGNITION -->
-            <div id="diemdanh" class="glass-card rounded-2xl shadow-xl border border-slate-200/80 p-5 relative overflow-hidden">
-                <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
-                    <h2 class="font-extrabold text-slate-800 text-sm flex items-center gap-2">
-                        <div class="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shadow-sm">
-                            <i class="fa-solid fa-user-check"></i>
-                        </div>
-                        Điểm Danh Khuôn Mặt AI
+    <!-- Nội Dung Chính -->
+    <main class="relative z-20 flex-grow max-w-6xl mx-auto w-full px-4 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        <!-- Cột Trái: Trình Phát Nhạc & Các Nghi Lễ Tâm Linh -->
+        <section class="lg:col-span-4 space-y-6">
+            
+            <!-- Trình Phát Nhạc Phật / YouTube Embed Player -->
+            <div class="bg-amber-950/40 border border-amber-700/50 rounded-2xl p-5 shadow-2xl backdrop-blur-md">
+                <div class="flex items-center justify-between mb-3 border-b border-amber-800/50 pb-2">
+                    <h2 class="text-lg font-bold text-amber-300 flex items-center gap-2">
+                        <i class="fa-solid fa-music text-amber-400"></i> Nhạc Phật Tĩnh Tâm
                     </h2>
-                    <span id="ipCheckBadge" class="text-[10px] font-bold px-2.5 py-1 rounded-full bg-slate-100 text-slate-500">
-                        Đang check IP...
-                    </span>
+                    <span class="text-xs px-2 py-0.5 rounded bg-amber-900/60 text-amber-200 border border-amber-600/40 font-sans-custom">YouTube HD</span>
                 </div>
-
-                <!-- Form Đăng nhập tài khoản -->
-                <div id="loginForm" class="space-y-3.5">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Tài khoản cán bộ</label>
-                        <input type="text" id="usernameInput" placeholder="Nhập tài khoản (vd: anhkhoaancuu)" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-500 focus:bg-white focus:outline-none transition">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Mật khẩu</label>
-                        <input type="password" id="passwordInput" placeholder="••••••••" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-500 focus:bg-white focus:outline-none transition">
-                    </div>
-                    <div id="loginError" class="text-xs text-rose-600 hidden font-semibold">Tài khoản hoặc mật khẩu không chính xác!</div>
-                    <button onclick="handleLogin()" class="w-full bg-gradient-to-r from-blue-700 to-indigo-700 hover:from-blue-800 hover:to-indigo-800 text-white font-bold py-2.5 rounded-xl text-xs shadow-lg shadow-blue-600/20 transition flex justify-center items-center gap-2">
-                        <i class="fa-solid fa-right-to-bracket"></i> Đăng Nhập
-                    </button>
+                
+                <!-- Iframe YouTube Player -->
+                <div class="relative w-full aspect-video rounded-xl overflow-hidden shadow-lg border border-amber-800/60 bg-black">
+                    <iframe 
+                        class="w-full h-full"
+                        src="https://www.youtube.com/embed/T3vF3jCsJ0w?si=ReZHBC6InUorZl9K" 
+                        title="YouTube video player" 
+                        frameborder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                        referrerpolicy="strict-origin-when-cross-origin" 
+                        allowfullscreen>
+                    </iframe>
                 </div>
-
-                <!-- Khu vực Khung Camera Điểm Danh khi Đã Đăng Nhập -->
-                <div id="checkinPanel" class="hidden space-y-4">
-                    <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center">
-                        <div>
-                            <p class="text-[10px] text-slate-400 font-semibold uppercase">Cán bộ hoạt động</p>
-                            <p id="currentUserName" class="font-bold text-slate-800 text-sm"></p>
-                        </div>
-                        <span id="roleBadge" class="text-[10px] font-bold px-2.5 py-1 rounded-full"></span>
-                    </div>
-
-                    <!-- Khung Camera AI -->
-                    <div class="relative bg-slate-900 rounded-2xl overflow-hidden aspect-video border-2 border-slate-800 shadow-inner flex items-center justify-center">
-                        <video id="webcam" autoplay playsinline class="w-full h-full object-cover transform -scale-x-100 hidden"></video>
-                        <canvas id="canvas" class="hidden"></canvas>
-
-                        <!-- Giao diện khi chưa mở Cam -->
-                        <div id="camPlaceholder" class="text-center p-4">
-                            <i class="fa-solid fa-camera text-3xl text-slate-600 mb-2"></i>
-                            <p class="text-xs text-slate-400 font-medium">Bấm bên dưới để kích hoạt AI Face Cam</p>
-                        </div>
-
-                        <!-- Khung quét Face ID -->
-                        <div id="faceOverlay" class="hidden absolute inset-0 pointer-events-none flex flex-col justify-between p-4">
-                            <div class="scanner-line absolute w-full left-0"></div>
-                            <div class="border-2 border-emerald-400/60 rounded-2xl h-full w-3/4 mx-auto border-dashed animate-pulse"></div>
-                            <span class="bg-black/60 backdrop-blur-md text-emerald-400 text-[10px] font-bold px-2 py-1 rounded-md mx-auto">
-                                <i class="fa-solid fa-face-smile mr-1"></i> AI Scanning...
-                            </span>
-                        </div>
-                    </div>
-
-                    <!-- Nút Bật Camera & Điểm Danh -->
-                    <div class="space-y-2">
-                        <button id="btnStartCam" onclick="startCamera()" class="w-full bg-slate-800 hover:bg-slate-900 text-white py-2 rounded-xl text-xs font-semibold transition flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-video text-amber-400"></i> Bật Camera Quét Khuôn Mặt
-                        </button>
-
-                        <div class="grid grid-cols-2 gap-2">
-                            <button onclick="triggerFaceCheckIn('Sáng')" class="bg-emerald-600 hover:bg-emerald-700 text-white p-2.5 rounded-xl text-xs font-bold shadow-md shadow-emerald-600/20 transition active:scale-95">
-                                <i class="fa-solid fa-sun block text-base mb-0.5"></i> Điểm danh SÁNG
-                            </button>
-                            <button onclick="triggerFaceCheckIn('Chiều')" class="bg-amber-600 hover:bg-amber-700 text-white p-2.5 rounded-xl text-xs font-bold shadow-md shadow-amber-600/20 transition active:scale-95">
-                                <i class="fa-solid fa-cloud-sun block text-base mb-0.5"></i> Điểm danh CHIỀU
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Bảng điều khiển Admin -->
-                    <div id="adminControls" class="hidden pt-2 border-t border-slate-200">
-                        <button onclick="viewCheckinHistory()" class="w-full bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 py-2 rounded-xl text-xs font-bold transition flex justify-center items-center gap-2">
-                            <i class="fa-solid fa-shield-cat"></i> Xem Nhật Ký Điểm Danh Toàn Bộ
-                        </button>
-                    </div>
-
-                    <button onclick="logout()" class="w-full text-slate-400 hover:text-rose-600 text-xs py-1 transition flex justify-center items-center gap-1">
-                        <i class="fa-solid fa-power-off"></i> Đăng xuất
-                    </button>
-                </div>
+                <p class="text-xs text-amber-300/70 mt-2 text-center font-sans-custom">
+                    Bấm nút Play để thưởng thức âm nhạc thiền thư giãn
+                </p>
             </div>
 
-            <!-- CARD THỐNG KÊ NGÀY CÔNG & CHUYÊN CẦN -->
-            <div id="thongke" class="glass-card rounded-2xl shadow-sm border border-slate-200/80 p-5">
-                <h2 class="font-extrabold text-slate-800 text-sm mb-3 flex items-center gap-2">
-                    <div class="w-8 h-8 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
-                        <i class="fa-solid fa-chart-line"></i>
-                    </div>
-                    Thống Kê Ngày Công Tháng 10/2026
+            <!-- Công Cụ Tâm Linh: Chuông Mõ -->
+            <div class="bg-amber-950/40 border border-amber-700/50 rounded-2xl p-5 shadow-2xl backdrop-blur-md">
+                <h2 class="text-lg font-bold text-amber-300 mb-4 text-center border-b border-amber-800/50 pb-2">
+                    <i class="fa-solid fa-bell text-amber-400"></i> Tự Tay Tụng Niệm
                 </h2>
-                <div class="grid grid-cols-3 gap-2 text-center">
-                    <div class="p-2.5 bg-blue-50 rounded-xl border border-blue-100">
-                        <p class="text-[10px] text-slate-500 font-semibold">Đúng giờ</p>
-                        <p class="text-lg font-black text-blue-700 mt-0.5">22</p>
-                    </div>
-                    <div class="p-2.5 bg-amber-50 rounded-xl border border-amber-100">
-                        <p class="text-[10px] text-slate-500 font-semibold">Muộn/Sớm</p>
-                        <p class="text-lg font-black text-amber-600 mt-0.5">0</p>
-                    </div>
-                    <div class="p-2.5 bg-emerald-50 rounded-xl border border-emerald-100">
-                        <p class="text-[10px] text-slate-500 font-semibold">Chuyên cần</p>
-                        <p class="text-lg font-black text-emerald-600 mt-0.5">100%</p>
-                    </div>
-                </div>
-            </div>
-        </aside>
-
-        <!-- CỘT PHẢI: BÁO CÁO LỊCH LÀM VIỆC & ĐĂNG KÝ BÁO NGHĨ (7 Cột) -->
-        <section class="lg:col-span-7 space-y-6">
-
-            <!-- CARD BÁO CÁO LỊCH LÀM VIỆC TUẦN -->
-            <div id="lichlamviec" class="glass-card rounded-2xl shadow-sm border border-slate-200/80 p-5 sm:p-6">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-4 mb-4 border-b border-slate-100 gap-3">
-                    <div>
-                        <h2 class="font-extrabold text-slate-800 text-base flex items-center gap-2">
-                            <i class="fa-solid fa-calendar-days text-blue-600"></i> Báo Cáo Lịch Làm Việc Tuần
-                        </h2>
-                        <p class="text-xs text-slate-500 mt-0.5">Dữ liệu kết nối tự động từ Google Sheets bộ phận</p>
-                    </div>
-                    <a href="https://docs.google.com/spreadsheets/d/1HEERG29ikaAdlv6DJpI9q6YclAKvOpfC60EpGOYSkfs/edit?usp=sharing" target="_blank" class="text-xs bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-semibold px-3.5 py-2 rounded-xl border border-emerald-200 transition flex items-center gap-1.5 shadow-sm">
-                        <i class="fa-solid fa-file-excel text-emerald-600"></i> Mở File Gốc
-                    </a>
-                </div>
-
-                <!-- Bảng Lịch làm việc cuộn mượt -->
-                <div class="overflow-x-auto rounded-xl border border-slate-200">
-                    <table class="w-full text-left text-xs border-collapse min-w-[700px]">
-                        <thead>
-                            <tr class="bg-slate-100/90 text-slate-700 uppercase font-bold border-b border-slate-200 text-[11px]">
-                                <th class="p-3 w-36 border-r">Cán Bộ</th>
-                                <th class="p-3 w-16 border-r text-center">Buổi</th>
-                                <th class="p-3 border-r bg-blue-50/50">Thứ 2</th>
-                                <th class="p-3 border-r">Thứ 3</th>
-                                <th class="p-3 border-r">Thứ 4</th>
-                                <th class="p-3 border-r">Thứ 5</th>
-                                <th class="p-3 border-r">Thứ 6</th>
-                                <th class="p-3 border-r">Thứ 7</th>
-                                <th class="p-3 text-center">Chủ Nhật</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-200 text-slate-700">
-                            <!-- Nguyễn Bỉnh Minh Khuê -->
-                            <tr class="hover:bg-slate-50 transition">
-                                <td rowspan="2" class="p-3 font-semibold text-slate-900 bg-slate-50/50 border-r align-top">Nguyễn Bỉnh Minh Khuê</td>
-                                <td class="p-2 font-bold text-amber-700 bg-amber-50/30 border-r text-center">SÁNG</td>
-                                <td class="p-2 border-r">7h30: Chào cờ UB<br>8h: Làm việc TT</td>
-                                <td class="p-2 border-r">Lấy tin bài UB</td>
-                                <td class="p-2 border-r">Lấy tin bài UB</td>
-                                <td class="p-2 border-r">8h: Ngày Quốc tế Người cao tuổi NVH KV6</td>
-                                <td class="p-2 border-r">Lấy tin bài UB</td>
-                                <td class="p-2 border-r">7h00: Khảo sát TDP cùng Chủ tịch</td>
-                                <td class="p-2"></td>
-                            </tr>
-                            <tr class="hover:bg-slate-50 transition border-b">
-                                <td class="p-2 font-bold text-blue-700 bg-blue-50/30 border-r text-center">CHIỀU</td>
-                                <td class="p-2 border-r">13h30: Sơ kết KT-XH</td>
-                                <td class="p-2 border-r">Lấy tin bài UB</td>
-                                <td class="p-2 border-r">Lấy tin bài UB</td>
-                                <td class="p-2 border-r">Lấy tin bài UB</td>
-                                <td class="p-2 border-r">Lấy tin bài UB</td>
-                                <td class="p-2 border-r"></td>
-                                <td class="p-2"></td>
-                            </tr>
-
-                            <!-- Hoàng Quốc Tuấn -->
-                            <tr class="hover:bg-slate-50 transition">
-                                <td rowspan="2" class="p-3 font-semibold text-slate-900 bg-slate-50/50 border-r align-top">Hoàng Quốc Tuấn</td>
-                                <td class="p-2 font-bold text-amber-700 bg-amber-50/30 border-r text-center">SÁNG</td>
-                                <td class="p-2 border-r">Chào cờ UB</td>
-                                <td class="p-2 border-r">Họp UBND</td>
-                                <td class="p-2 border-r">In GCN, làm Pano Lễ hội Quang Trung</td>
-                                <td class="p-2 border-r">Lập KH Trại sáng tác 2026</td>
-                                <td class="p-2 border-r">Thiết kế Pano Viettel</td>
-                                <td class="p-2 border-r">Làm việc TT</td>
-                                <td class="p-2"></td>
-                            </tr>
-                            <tr class="hover:bg-slate-50 transition border-b">
-                                <td class="p-2 font-bold text-blue-700 bg-blue-50/30 border-r text-center">CHIỀU</td>
-                                <td class="p-2 border-r">Làm việc TT</td>
-                                <td class="p-2 border-r">Làm việc TT</td>
-                                <td class="p-2 border-r">Họp UBND "Quang Trung"</td>
-                                <td class="p-2 border-r">Dự trù Trại sáng tác 2026</td>
-                                <td class="p-2 border-r">Vệ sinh kho vật tư</td>
-                                <td class="p-2 border-r"></td>
-                                <td class="p-2"></td>
-                            </tr>
-
-                            <!-- Lê Nguyên Vũ -->
-                            <tr class="hover:bg-slate-50 transition">
-                                <td rowspan="2" class="p-3 font-semibold text-slate-900 bg-slate-50/50 border-r align-top">Lê Nguyên Vũ</td>
-                                <td class="p-2 font-bold text-amber-700 bg-amber-50/30 border-r text-center">SÁNG</td>
-                                <td class="p-2 border-r">Chào cờ UB</td>
-                                <td class="p-2 border-r">Thanh quyết toán giải vật</td>
-                                <td class="p-2 border-r">Làm việc TT</td>
-                                <td class="p-2 border-r">Làm việc TT</td>
-                                <td class="p-2 border-r">Làm việc TT</td>
-                                <td class="p-2 border-r">Làm việc TT</td>
-                                <td class="p-2"></td>
-                            </tr>
-                            <tr class="hover:bg-slate-50 transition border-b">
-                                <td class="p-2 font-bold text-blue-700 bg-blue-50/30 border-r text-center">CHIỀU</td>
-                                <td class="p-2 border-r">Làm việc TT</td>
-                                <td class="p-2 border-r">Báo cáo phát thanh</td>
-                                <td class="p-2 border-r">Làm việc TT</td>
-                                <td class="p-2 border-r">Làm việc TT</td>
-                                <td class="p-2 border-r">Làm việc TT</td>
-                                <td class="p-2 border-r"></td>
-                                <td class="p-2"></td>
-                            </tr>
-
-                            <!-- Trần Anh Khoa (Admin) -->
-                            <tr class="bg-purple-50/40 hover:bg-purple-50/80 transition">
-                                <td rowspan="2" class="p-3 font-bold text-purple-950 bg-purple-100/50 border-r align-top">
-                                    Trần Anh Khoa
-                                    <span class="text-[9px] bg-purple-200 text-purple-800 font-bold px-1.5 py-0.5 rounded-md inline-block mt-1 border border-purple-300">ADMIN</span>
-                                </td>
-                                <td class="p-2 font-bold text-amber-700 bg-amber-50/30 border-r text-center">SÁNG</td>
-                                <td class="p-2 border-r">Chào cờ UB</td>
-                                <td class="p-2 border-r">Làm việc TT</td>
-                                <td class="p-2 border-r">Kiểm tra Pano</td>
-                                <td class="p-2 border-r">Làm việc TT</td>
-                                <td class="p-2 border-r">Làm việc TT</td>
-                                <td class="p-2 border-r">Làm việc TT</td>
-                                <td class="p-2 bg-slate-100 text-slate-400 text-center font-medium">Nghỉ</td>
-                            </tr>
-                            <tr class="bg-purple-50/40 hover:bg-purple-50/80 transition border-b">
-                                <td class="p-2 font-bold text-blue-700 bg-blue-50/30 border-r text-center">CHIỀU</td>
-                                <td class="p-2 border-r">Làm việc TT</td>
-                                <td class="p-2 border-r">Kiểm tra Pano</td>
-                                <td class="p-2 border-r">Kiểm tra Pano</td>
-                                <td class="p-2 border-r">Làm việc TT</td>
-                                <td class="p-2 border-r">Sắp kho bãi vật tư</td>
-                                <td class="p-2 bg-slate-100 text-slate-400 text-center border-r font-medium">Nghỉ</td>
-                                <td class="p-2 bg-slate-100 text-slate-400 text-center font-medium">Nghỉ</td>
-                            </tr>
-
-                            <!-- Trần Thị Tùng Chi -->
-                            <tr class="hover:bg-slate-50 transition">
-                                <td rowspan="2" class="p-3 font-semibold text-slate-900 bg-slate-50/50 border-r align-top">Trần Thị Tùng Chi</td>
-                                <td class="p-2 font-bold text-amber-700 bg-amber-50/30 border-r text-center">SÁNG</td>
-                                <td class="p-2 border-r">Chào cờ UB</td>
-                                <td class="p-2 border-r">Làm việc TT</td>
-                                <td class="p-2 border-r">Làm việc TT</td>
-                                <td class="p-2 border-r">Làm việc TT</td>
-                                <td class="p-2 border-r">Làm việc TT</td>
-                                <td class="p-2 border-r">Làm việc TT</td>
-                                <td class="p-2 bg-slate-100 text-slate-400 text-center font-medium">Nghỉ</td>
-                            </tr>
-                            <tr class="hover:bg-slate-50 transition">
-                                <td class="p-2 font-bold text-blue-700 bg-blue-50/30 border-r text-center">CHIỀU</td>
-                                <td class="p-2 border-r">13h30: Sơ kết KT-XH</td>
-                                <td class="p-2 border-r">13h30: Lấy tin bài UB</td>
-                                <td class="p-2 border-r">Làm việc TT</td>
-                                <td class="p-2 border-r">Làm việc TT</td>
-                                <td class="p-2 border-r">Sắp kho bãi vật tư</td>
-                                <td class="p-2 bg-slate-100 text-slate-400 text-center border-r font-medium">Nghỉ</td>
-                                <td class="p-2 bg-slate-100 text-slate-400 text-center font-medium">Nghỉ</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- CARD BÁO NGHỈ / ĐỔI CA TRỰC -->
-            <div id="donbaonghi" class="glass-card rounded-2xl shadow-sm border border-slate-200/80 p-5">
-                <h2 class="font-extrabold text-slate-800 text-sm mb-3 flex items-center gap-2">
-                    <div class="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
-                        <i class="fa-solid fa-paper-plane"></i>
-                    </div>
-                    Gửi Đơn Báo Nghỉ / Đổi Ca Công Tác
-                </h2>
-                <form onsubmit="submitLeaveForm(event)" class="space-y-3">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Loại yêu cầu</label>
-                            <select id="leaveType" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                                <option value="Xin nghỉ phép">Xin nghỉ phép</option>
-                                <option value="Báo công tác ngoài">Báo công tác ngoài UB</option>
-                                <option value="Đổi ca trực">Đổi ca công tác</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Ngày áp dụng</label>
-                            <input type="date" required class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Lý do chi tiết</label>
-                        <textarea rows="2" placeholder="Nhập lý do chi tiết..." class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"></textarea>
-                    </div>
-                    <button type="submit" class="bg-slate-800 hover:bg-slate-900 text-white font-bold py-2 px-4 rounded-xl text-xs transition shadow-md">
-                        <i class="fa-solid fa-paper-plane mr-1"></i> Gửi Yêu Cầu Cho Admin
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- Nút Gõ Mõ -->
+                    <button id="btnKnockWood" onclick="playWoodBlock(event)" class="flex flex-col items-center justify-center p-4 bg-gradient-to-b from-amber-900/80 to-amber-950/90 hover:from-amber-800 hover:to-amber-900 border border-amber-600/60 rounded-xl shadow-lg active:scale-95 transition">
+                        <div class="text-4xl mb-2">🪵</div>
+                        <span class="font-bold text-amber-200">Gõ Mõ</span>
+                        <span class="text-xs text-amber-400/80 mt-1 font-sans-custom">Công Đức +1</span>
                     </button>
-                </form>
+                    <!-- Nút Thỉnh Chuông -->
+                    <button id="btnRingBell" onclick="playTempleBell()" class="flex flex-col items-center justify-center p-4 bg-gradient-to-b from-amber-900/80 to-amber-950/90 hover:from-amber-800 hover:to-amber-900 border border-amber-600/60 rounded-xl shadow-lg active:scale-95 transition">
+                        <div class="text-4xl mb-2">🔔</div>
+                        <span class="font-bold text-amber-200">Thỉnh Chuông</span>
+                        <span class="text-xs text-amber-400/80 mt-1 font-sans-custom">Tĩnh Tâm</span>
+                    </button>
+                </div>
+                <!-- Đếm số lần gõ mõ -->
+                <div class="mt-4 text-center bg-black/40 py-2 rounded-lg border border-amber-900/60">
+                    <span class="text-xs font-sans-custom text-amber-300/80">Tổng Công Đức Tích Lũy:</span>
+                    <span id="meritCount" class="text-xl font-bold text-yellow-400 font-sans-custom ml-2">0</span>
+                </div>
+            </div>
+
+            <!-- Các Tính Năng Nghi Lễ -->
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="openModal('drawStickModal')" class="p-3 bg-amber-900/50 hover:bg-amber-800/60 border border-amber-700/60 rounded-xl text-amber-200 font-semibold text-sm flex items-center justify-center gap-2 transition shadow-lg">
+                    <i class="fa-solid fa-scroll text-amber-400"></i> Rút Quẻ Xăm
+                </button>
+                <button onclick="openModal('petitionModal')" class="p-3 bg-amber-900/50 hover:bg-amber-800/60 border border-amber-700/60 rounded-xl text-amber-200 font-semibold text-sm flex items-center justify-center gap-2 transition shadow-lg">
+                    <i class="fa-solid fa-pen-nib text-amber-400"></i> Dâng Sớ Cầu An
+                </button>
+            </div>
+
+        </section>
+
+        <!-- Cột Phải: Bàn Thờ & Tượng Phật Trang Nghiêm -->
+        <section class="lg:col-span-8 flex flex-col items-center relative">
+            
+            <!-- Chọn Tượng Phật -->
+            <div class="mb-4 flex flex-wrap justify-center gap-2 z-20">
+                <button onclick="changeBuddha('thichca')" class="px-3 py-1.5 rounded-full bg-amber-900/60 hover:bg-amber-700 border border-amber-600/50 text-xs font-sans-custom text-amber-200 transition">Đức Phật Thích Ca</button>
+                <button onclick="changeBuddha('quanam')" class="px-3 py-1.5 rounded-full bg-amber-900/60 hover:bg-amber-700 border border-amber-600/50 text-xs font-sans-custom text-amber-200 transition">Bồ Tát Quán Thế Âm</button>
+                <button onclick="changeBuddha('duocsu')" class="px-3 py-1.5 rounded-full bg-amber-900/60 hover:bg-amber-700 border border-amber-600/50 text-xs font-sans-custom text-amber-200 transition">Đức Phật Dược Sư</button>
+                <button onclick="changeBuddha('dilac')" class="px-3 py-1.5 rounded-full bg-amber-900/60 hover:bg-amber-700 border border-amber-600/50 text-xs font-sans-custom text-amber-200 transition">Đức Phật Di Lặc</button>
+            </div>
+
+            <!-- Khung Bàn Thờ Trang Nghiêm -->
+            <div class="relative w-full max-w-2xl bg-gradient-to-b from-amber-950/60 via-amber-950/30 to-black/80 rounded-3xl p-6 md:p-8 border border-amber-700/40 shadow-[0_0_50px_rgba(0,0,0,0.9)] backdrop-blur-sm flex flex-col items-center">
+                
+                <!-- Hào Quang & Tượng Phật -->
+                <div class="relative mb-6 flex items-center justify-center">
+                    <!-- Hào Quang Background -->
+                    <div class="absolute w-56 h-56 md:w-72 md:h-72 rounded-full halo-effect bg-amber-400/20"></div>
+                    
+                    <!-- Hình Tượng Phật Canvas/SVG Art -->
+                    <div id="buddhaAvatar" class="relative z-10 w-52 h-52 md:w-64 md:h-64 flex items-center justify-center text-8xl md:text-9xl transition-all duration-500 transform hover:scale-105 select-none drop-shadow-[0_10px_20px_rgba(0,0,0,0.8)]">
+                        🧘‍♂️
+                    </div>
+                </div>
+
+                <!-- Tên Vị Phật -->
+                <h3 id="buddhaName" class="text-xl md:text-2xl font-bold text-amber-300 text-center mb-6 tracking-wide drop-shadow">
+                    Nam Mô Bổn Sư Thích Ca Mâu Ni Phật
+                </h3>
+
+                <!-- Bàn Thờ Cúng Phẩm (Nến, Hương, Trái Cây, Hoa) -->
+                <div class="w-full bg-amber-950/80 border-t-4 border-amber-700 rounded-xl p-4 shadow-2xl relative">
+                    <div class="flex justify-between items-end px-2 md:px-8">
+                        
+                        <!-- Nến Bên Trái -->
+                        <div class="flex flex-col items-center">
+                            <div class="flame"></div>
+                            <div class="w-3 h-12 bg-gradient-to-b from-red-600 to-red-800 rounded-t-sm shadow-md"></div>
+                            <div class="w-8 h-3 bg-amber-700 rounded-sm shadow"></div>
+                        </div>
+
+                        <!-- Mâm Trái Cây -->
+                        <div class="text-3xl md:text-4xl drop-shadow" title="Mâm Ngũ Quả">
+                            🍎🍊🍌
+                        </div>
+
+                        <!-- Bát Hương Trung Tâm -->
+                        <div class="relative flex flex-col items-center cursor-pointer" onclick="lightIncense()" title="Bấm để thắp hương">
+                            <!-- Que Hương -->
+                            <div class="flex gap-1.5 mb-0 z-10">
+                                <div id="incenseStick1" class="w-1 h-12 bg-amber-700 rounded-t-full transition-all"></div>
+                                <div id="incenseStick2" class="w-1 h-14 bg-amber-600 rounded-t-full transition-all"></div>
+                                <div id="incenseStick3" class="w-1 h-12 bg-amber-700 rounded-t-full transition-all"></div>
+                            </div>
+                            <!-- Bát Hương -->
+                            <div class="w-16 h-10 md:w-20 md:h-12 bg-gradient-to-b from-amber-600 via-amber-800 to-amber-950 rounded-b-2xl border-t-2 border-amber-400 flex items-center justify-center shadow-2xl">
+                                <span class="text-xs text-amber-300 font-sans-custom font-bold">香</span>
+                            </div>
+                        </div>
+
+                        <!-- Bình Hoa Sen -->
+                        <div class="text-3xl md:text-4xl drop-shadow" title="Bình Hoa Sen">
+                            🪷
+                        </div>
+
+                        <!-- Nến Bên Phải -->
+                        <div class="flex flex-col items-center">
+                            <div class="flame"></div>
+                            <div class="w-3 h-12 bg-gradient-to-b from-red-600 to-red-800 rounded-t-sm shadow-md"></div>
+                            <div class="w-8 h-3 bg-amber-700 rounded-sm shadow"></div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Nút Thắp Hương -->
+                <button onclick="lightIncense()" class="mt-6 px-6 py-2.5 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-amber-950 font-bold rounded-full shadow-lg transition transform active:scale-95 flex items-center gap-2 font-sans-custom">
+                    <i class="fa-solid fa-fire text-red-950"></i> Thắp Thêm Hương (Nhang)
+                </button>
+            </div>
+            
+            <!-- Danh Sách Sớ Cầu An Đã Dâng -->
+            <div class="w-full max-w-2xl mt-6 bg-amber-950/30 border border-amber-800/40 rounded-2xl p-4">
+                <h4 class="text-sm font-bold text-amber-300 mb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-list-check text-amber-400"></i> Danh Sách Sớ Cầu An Đã Ghi Danh
+                </h4>
+                <div id="petitionList" class="space-y-2 max-h-36 overflow-y-auto pr-1 text-xs font-sans-custom text-amber-200/80">
+                    <div class="p-2 bg-black/30 rounded border border-amber-900/40 flex justify-between">
+                        <span><strong>Nguyễn Văn An:</strong> Cầu cho gia đình bình an, tai qua nạn khỏi.</span>
+                        <span class="text-amber-400/60">Hôm nay</span>
+                    </div>
+                </div>
             </div>
 
         </section>
 
     </main>
 
-    <!-- FOOTER -->
-    <footer class="bg-slate-900 text-slate-400 text-xs py-6 border-t border-slate-800">
-        <div class="max-w-7xl mx-auto px-4 text-center sm:text-left flex flex-col sm:flex-row justify-between items-center gap-3">
-            <div>
-                <p class="font-bold text-slate-200">CỔNG THÔNG TIN CÔNG TÁC BỘ PHẬN VĂN HOÁ PHƯỜNG AN CỰU</p>
-                <p class="text-[11px] text-slate-500 mt-0.5">Thành phố Huế, Tỉnh Thừa Thiên Huế</p>
+    <!-- Modal Rút Quẻ Xăm -->
+    <div id="drawStickModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-amber-950 border border-amber-700 rounded-2xl max-w-md w-full p-6 text-center relative shadow-2xl">
+            <button onclick="closeModal('drawStickModal')" class="absolute top-3 right-3 text-amber-400 hover:text-amber-200 text-xl">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 class="text-xl font-bold text-amber-300 mb-3">🪷 Rút Quẻ Xăm Đầu Ngày</h3>
+            <p class="text-xs text-amber-200/80 font-sans-custom mb-6">Hãy thành tâm nghĩ về điều mình nguyện ước và nhấn nút bên dưới.</p>
+            
+            <div id="stickBox" class="text-6xl mb-6 transition transform">🎋</div>
+            
+            <div id="stickResult" class="hidden mb-6 p-4 bg-black/40 rounded-xl border border-amber-800 text-left">
+                <div class="font-bold text-amber-400 text-base mb-1" id="stickTitle">Quẻ Thượng Cát</div>
+                <div class="text-xs text-amber-200 font-sans-custom italic mb-2" id="stickContent">"Vạn sự khởi đầu tuy gian nan, nhưng lòng thành sẽ gặp đại duyên."</div>
+                <div class="text-xs text-amber-300/80 font-sans-custom" id="stickAdvice">Lời khuyên: Giữ tâm bình thản, chăm làm việc thiện, may mắn tự tới.</div>
             </div>
-            <p class="text-[11px]">Quản trị hệ thống bởi Admin: <span class="text-slate-200 font-semibold">Trần Anh Khoa</span></p>
-        </div>
-    </footer>
 
-    <!-- MODAL XEM NHẬT KÝ ĐIỂM DANH (ADMIN) -->
-    <div id="adminModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-2xl w-full p-6 space-y-4 shadow-2xl border border-slate-100">
-            <div class="flex justify-between items-center border-b pb-3">
-                <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
-                    <i class="fa-solid fa-clipboard-user text-purple-600"></i> Nhật Ký Điểm Danh Cán Bộ
-                </h3>
-                <button onclick="closeAdminModal()" class="text-slate-400 hover:text-slate-600 p-1">
-                    <i class="fa-solid fa-xmark text-lg"></i>
-                </button>
-            </div>
-            <div class="max-h-80 overflow-y-auto rounded-xl border border-slate-200">
-                <table class="w-full text-xs text-left border-collapse">
-                    <thead class="bg-slate-100 sticky top-0 font-bold text-slate-700">
-                        <tr>
-                            <th class="p-2.5 border-b">Thời gian</th>
-                            <th class="p-2.5 border-b">Cán bộ</th>
-                            <th class="p-2.5 border-b">Buổi</th>
-                            <th class="p-2.5 border-b">IP Xác thực</th>
-                            <th class="p-2.5 border-b">Trạng thái</th>
-                        </tr>
-                    </thead>
-                    <tbody id="checkinLogsTable" class="divide-y divide-slate-100"></tbody>
-                </table>
-            </div>
-            <div class="text-right pt-2">
-                <button onclick="closeAdminModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-xl text-xs font-semibold">Đóng</button>
-            </div>
+            <button id="btnShakeStick" onclick="shakeStick()" class="w-full py-3 bg-amber-600 hover:bg-amber-500 font-bold text-amber-950 rounded-xl shadow transition font-sans-custom">
+                Xóc Ống Xăm
+            </button>
         </div>
     </div>
 
-    <!-- JAVASCRIPT LOGIC -->
-    <script>
-        // Danh sách tài khoản
-        const userDatabase = {
-            "anhkhoaancuu": { name: "Trần Anh Khoa", pass: "123456789", role: "admin" },
-            "tungchiancuu": { name: "Trần Thị Tùng Chi", pass: "123456789", role: "user" },
-            "quoctuanancuu": { name: "Hoàng Quốc Tuấn", pass: "123456789", role: "user" },
-            "minhkhueancuu": { name: "Nguyễn Bỉnh Minh Khuê", pass: "123456789", role: "user" },
-            "nguyenvuancuu": { name: "Lê Nguyên Vũ", pass: "123456789", role: "user" }
-        };
-
-        let currentIp = "Đang kiểm tra...";
-        let isOfficeIp = true; // Cho phép điểm danh khi kiểm tra thành công IP
-        let streamTrack = null;
-
-        // Bật/tắt menu mobile
-        function toggleMobileNav() {
-            document.getElementById('mobileNav').classList.toggle('hidden');
-        }
-
-        // Tự động kiểm tra IP
-        async function fetchIpAddress() {
-            try {
-                const res = await fetch('https://api.ipify.org?format=json');
-                const data = await res.json();
-                currentIp = data.ip;
-                document.getElementById('userIpDisplay').innerText = currentIp;
-                
-                // Cập nhật trạng thái IP
-                const badge = document.getElementById('ipCheckBadge');
-                badge.innerText = "IP Hợp Lệ (Văn Phòng)";
-                badge.className = "text-[10px] font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200";
-            } catch (e) {
-                document.getElementById('userIpDisplay').innerText = "113.160.xx.xx (Mạng UBND)";
-                const badge = document.getElementById('ipCheckBadge');
-                badge.innerText = "IP Văn Phòng OK";
-                badge.className = "text-[10px] font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700";
-            }
-        }
-
-        // Bật Camera AI Quét Khuôn Mặt
-        async function startCamera() {
-            const video = document.getElementById('webcam');
-            const placeholder = document.getElementById('camPlaceholder');
-            const overlay = document.getElementById('faceOverlay');
-
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                video.srcObject = stream;
-                streamTrack = stream.getTracks()[0];
-                
-                video.classList.remove('hidden');
-                placeholder.classList.add('hidden');
-                overlay.classList.remove('hidden');
-                document.getElementById('btnStartCam').innerText = "Camera AI Đã Kích Hoạt";
-                document.getElementById('btnStartCam').className = "w-full bg-emerald-800 text-white py-2 rounded-xl text-xs font-semibold";
-            } catch (err) {
-                alert("Không thể kết nối Camera. Vui lòng cấp quyền truy cập Camera trên trình duyệt!");
-            }
-        }
-
-        // Đồng hồ thời gian
-        function updateClock() {
-            const now = new Date();
-            const timeStr = now.toLocaleTimeString('vi-VN') + ' - ' + now.toLocaleDateString('vi-VN');
-            document.getElementById('clockDisplay').innerText = 'Thời gian: ' + timeStr;
-        }
-        setInterval(updateClock, 1000);
-
-        window.onload = function() {
-            updateClock();
-            fetchIpAddress();
-            const sessionUser = JSON.parse(localStorage.getItem('ancuu_session'));
-            if (sessionUser && userDatabase[sessionUser.username]) {
-                renderLoggedInState(sessionUser.username);
-            } else {
-                renderLoggedOutState();
-            }
-        };
-
-        // Đăng nhập
-        function handleLogin() {
-            const userVal = document.getElementById('usernameInput').value.trim();
-            const passVal = document.getElementById('passwordInput').value.trim();
-            const errorEl = document.getElementById('loginError');
-
-            if (userDatabase[userVal] && userDatabase[userVal].pass === passVal) {
-                errorEl.classList.add('hidden');
-                localStorage.setItem('ancuu_session', JSON.stringify({ username: userVal }));
-                renderLoggedInState(userVal);
-            } else {
-                errorEl.classList.remove('hidden');
-            }
-        }
-
-        function logout() {
-            if (streamTrack) streamTrack.stop();
-            localStorage.removeItem('ancuu_session');
-            renderLoggedOutState();
-        }
-
-        function renderLoggedInState(username) {
-            const userData = userDatabase[username];
-            document.getElementById('loginForm').classList.add('hidden');
-            document.getElementById('checkinPanel').classList.remove('hidden');
-            document.getElementById('currentUserName').innerText = userData.name;
-
-            const badge = document.getElementById('roleBadge');
-            const adminControls = document.getElementById('adminControls');
-
-            if (userData.role === 'admin') {
-                badge.innerText = 'ADMIN';
-                badge.className = 'text-[9px] font-bold px-2.5 py-1 rounded-full bg-purple-100 text-purple-700 border border-purple-200';
-                adminControls.classList.remove('hidden');
-            } else {
-                badge.innerText = 'CÁN BỘ';
-                badge.className = 'text-[9px] font-bold px-2.5 py-1 rounded-full bg-blue-100 text-blue-700 border border-blue-200';
-                adminControls.classList.add('hidden');
-            }
-
-            document.getElementById('userHeaderStatus').innerHTML = `
-                <div class="flex items-center gap-2">
-                    <div class="text-right">
-                        <p class="text-[10px] text-blue-200 font-medium">${userData.role === 'admin' ? 'Quản trị viên' : 'Cán bộ'}</p>
-                        <p class="text-xs font-bold text-amber-300">${userData.name}</p>
-                    </div>
-                    <button onclick="logout()" class="w-8 h-8 rounded-xl bg-amber-400 text-blue-950 font-bold text-xs hover:bg-rose-500 hover:text-white transition flex justify-center items-center">
-                        <i class="fa-solid fa-power-off"></i>
-                    </button>
+    <!-- Modal Dâng Sớ Cầu An -->
+    <div id="petitionModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-amber-950 border border-amber-700 rounded-2xl max-w-md w-full p-6 relative shadow-2xl">
+            <button onclick="closeModal('petitionModal')" class="absolute top-3 right-3 text-amber-400 hover:text-amber-200 text-xl">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 class="text-xl font-bold text-amber-300 mb-2 text-center">📜 Viết Sớ Cầu An</h3>
+            <p class="text-xs text-amber-200/80 font-sans-custom mb-4 text-center">Gửi gắm tâm nguyện để thành kính dâng lên Chư Phật.</p>
+            
+            <form onsubmit="submitPetition(event)" class="space-y-4 font-sans-custom">
+                <div>
+                    <label class="block text-xs font-semibold text-amber-300 mb-1">Tín Chủ (Họ & Tên):</label>
+                    <input type="text" id="petitionerName" required placeholder="Nhập họ tên của bạn" class="w-full bg-black/50 border border-amber-800 rounded-lg px-3 py-2 text-sm text-amber-100 focus:outline-none focus:border-amber-500">
                 </div>
-            `;
-        }
+                <div>
+                    <label class="block text-xs font-semibold text-amber-300 mb-1">Lời Nguyện Cầu (Sớ):</label>
+                    <textarea id="petitionerContent" rows="3" required placeholder="Cầu cho gia đạo bình an, sức khỏe dồi dào, công việc thuận lợi..." class="w-full bg-black/50 border border-amber-800 rounded-lg px-3 py-2 text-sm text-amber-100 focus:outline-none focus:border-amber-500"></textarea>
+                </div>
+                <button type="submit" class="w-full py-3 bg-amber-600 hover:bg-amber-500 font-bold text-amber-950 rounded-xl shadow transition">
+                    Dâng Sớ Thành Kính
+                </button>
+            </form>
+        </div>
+    </div>
 
-        function renderLoggedOutState() {
-            document.getElementById('loginForm').classList.remove('hidden');
-            document.getElementById('checkinPanel').classList.add('hidden');
-            document.getElementById('userHeaderStatus').innerHTML = `
-                <span class="text-xs bg-white/10 text-blue-200 px-3 py-1.5 rounded-xl border border-white/10">
-                    <i class="fa-solid fa-lock text-amber-400"></i> Chưa đăng nhập
-                </span>
-            `;
-        }
+    <!-- Footer Trang Trọng -->
+    <footer class="relative z-20 text-center py-6 px-4 bg-black/80 border-t border-amber-900/60 font-sans-custom text-xs text-amber-400/80">
+        <div class="max-w-4xl mx-auto space-y-2">
+            <p class="font-semibold text-amber-300 text-sm">🏛️ ĐI CHÙA ONLINE - NƠI TĨNH TÂM VÀ NGUYỆN CẦU</p>
+            <p><i class="fa-solid fa-location-dot text-amber-500"></i> Địa chỉ: <strong>07 Tôn Quang Phiệt, Phường An Cựu, TP. Huế</strong></p>
+            <p><i class="fa-solid fa-code text-amber-500"></i> Nhà phát triển: <strong>Trần Anh Khoa (KHOACIT)</strong></p>
+            <p class="text-amber-500/60 text-[11px] pt-1 border-t border-amber-900/40 mt-2">
+                © 2026 KHOACIT - Phát nguyện phụng sự cộng đồng & kết duyên lành Phật pháp.
+            </p>
+        </div>
+    </footer>
 
-        // Xử lý Điểm danh AI Face Cam
-        function triggerFaceCheckIn(session) {
-            if (!isOfficeIp) {
-                alert("LỖI: Bạn phải kết nối mạng Wifi/IP của UBND Phường An Cựu mới có thể điểm danh!");
-                return;
+    <!-- JavaScript Xử Lý Âm Thanh Web Audio API & Tương Tác -->
+    <script>
+        // Web Audio API Synth (Không dùng file âm thanh ngoài)
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = null;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new AudioContext();
             }
-
-            const sessionData = JSON.parse(localStorage.getItem('ancuu_session'));
-            if (!sessionData) return;
-
-            const userData = userDatabase[sessionData.username];
-            const timeStr = new Date().toLocaleTimeString('vi-VN') + ' ' + new Date().toLocaleDateString('vi-VN');
-
-            let logs = JSON.parse(localStorage.getItem('ancuu_checkin_logs') || '[]');
-            logs.unshift({ time: timeStr, name: userData.name, session: session, ip: currentIp, status: 'Khuôn mặt AI Hợp Lệ' });
-            localStorage.setItem('ancuu_checkin_logs', JSON.stringify(logs));
-
-            alert(`[ĐIỂM DANH KHUÔN MẶT THÀNH CÔNG]\nCán bộ: ${userData.name}\nBuổi: ${session}\nXác thực Face AI: THÀNH CÔNG\nIP Wifi: ${currentIp}\nThời gian: ${timeStr}`);
         }
 
-        function viewCheckinHistory() {
-            const logs = JSON.parse(localStorage.getItem('ancuu_checkin_logs') || '[]');
-            const tbody = document.getElementById('checkinLogsTable');
-            tbody.innerHTML = '';
+        // Tiếng Mõ
+        function playWoodBlock(e) {
+            initAudio();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
 
-            if (logs.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400">Chưa có dữ liệu điểm danh nào.</td></tr>';
-            } else {
-                logs.forEach(log => {
-                    tbody.innerHTML += `
-                        <tr class="hover:bg-slate-50">
-                            <td class="p-2.5 border-b font-medium">${log.time}</td>
-                            <td class="p-2.5 border-b font-bold text-slate-800">${log.name}</td>
-                            <td class="p-2.5 border-b">${log.session}</td>
-                            <td class="p-2.5 border-b text-slate-500">${log.ip || currentIp}</td>
-                            <td class="p-2.5 border-b text-emerald-600 font-bold"><i class="fa-solid fa-circle-check"></i> ${log.status}</td>
-                        </tr>
-                    `;
-                });
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(120, audioCtx.currentTime + 0.08);
+
+            gain.gain.setValueAtTime(1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.08);
+
+            // Tăng đếm công đức
+            const countEl = document.getElementById('meritCount');
+            countEl.innerText = parseInt(countEl.innerText) + 1;
+
+            // Hiệu ứng chữ "Nam Mô A Di Đà Phật" nảy lên
+            showFloatingText(e ? e.clientX : window.innerWidth / 2, e ? e.clientY : window.innerHeight / 2, "Nam Mô A Di Đà Phật 🙏");
+        }
+
+        // Tiếng Chuông Chùa
+        function playTempleBell() {
+            initAudio();
+            const now = audioCtx.currentTime;
+            
+            // Tần số chuông chính & các bồi âm
+            const freqs = [300, 600, 900, 1250];
+            freqs.forEach((freq, index) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, now);
+
+                const duration = 3.5 - index * 0.5;
+                gain.gain.setValueAtTime(0.4 / (index + 1), now);
+                gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                osc.start(now);
+                osc.stop(now + duration);
+            });
+
+            showFloatingText(window.innerWidth / 2, window.innerHeight / 2, "🔔 Bồ Đề Tâm Kiên Cố");
+        }
+
+        // Hiển thị chữ nổi
+        function showFloatingText(x, y, text) {
+            const el = document.createElement('div');
+            el.className = 'floating-text font-sans-custom text-sm md:text-base';
+            el.innerText = text;
+            el.style.left = `${x - 60}px`;
+            el.style.top = `${y - 40}px`;
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 1800);
+        }
+
+        // Đổi Tượng Phật
+        const buddhaData = {
+            thichca: { name: "Nam Mô Bổn Sư Thích Ca Mâu Ni Phật", icon: "🧘‍♂️" },
+            quanam: { name: "Nam Mô Đại Bi Quán Thế Âm Bồ Tát", icon: "🪷" },
+            duocsu: { name: "Nam Mô Dược Sư Lưu Ly Quang Vương Phật", icon: "☸️" },
+            dilac: { name: "Nam Mô Di Lặc Tôn Phật", icon: "😃" }
+        };
+
+        function changeBuddha(key) {
+            const b = buddhaData[key];
+            if (b) {
+                document.getElementById('buddhaAvatar').innerText = b.icon;
+                document.getElementById('buddhaName').innerText = b.name;
             }
-            document.getElementById('adminModal').classList.remove('hidden');
         }
 
-        function closeAdminModal() {
-            document.getElementById('adminModal').classList.add('hidden');
+        // Thắp Hương
+        function lightIncense() {
+            const s1 = document.getElementById('incenseStick1');
+            const s2 = document.getElementById('incenseStick2');
+            const s3 = document.getElementById('incenseStick3');
+            
+            s1.style.background = '#f97316';
+            s2.style.background = '#ef4444';
+            s3.style.background = '#f97316';
+
+            showFloatingText(window.innerWidth / 2, window.innerHeight / 2 + 100, "🔥 Hương Trầm Nghi Ngút - Lòng Thành Kính");
         }
 
-        function submitLeaveForm(e) {
+        // Canvas Khói Hương
+        const canvas = document.getElementById('incenseCanvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class SmokeParticle {
+            constructor() {
+                this.x = window.innerWidth / 2 + (Math.random() - 0.5) * 40;
+                this.y = window.innerHeight * 0.65;
+                this.size = Math.random() * 4 + 2;
+                this.speedY = Math.random() * 1.5 + 0.8;
+                this.speedX = (Math.random() - 0.5) * 0.8;
+                this.opacity = 0.6;
+            }
+            update() {
+                this.y -= this.speedY;
+                this.x += this.speedX + Math.sin(this.y * 0.02) * 0.5;
+                this.opacity -= 0.004;
+                this.size += 0.05;
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(220, 210, 190, ${Math.max(this.opacity, 0)})`;
+                ctx.fill();
+            }
+        }
+
+        function animateSmoke() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (particles.length < 40) {
+                particles.push(new SmokeParticle());
+            }
+            particles.forEach((p, index) => {
+                p.update();
+                p.draw();
+                if (p.opacity <= 0) {
+                    particles.splice(index, 1);
+                }
+            });
+            requestAnimationFrame(animateSmoke);
+        }
+        animateSmoke();
+
+        // Modal Controls
+        function openModal(id) {
+            document.getElementById(id).classList.remove('hidden');
+        }
+        function closeModal(id) {
+            document.getElementById(id).classList.add('hidden');
+        }
+
+        // Rút Quẻ Xăm
+        const stickList = [
+            { title: "Quẻ Thượng Cát - Bình An", content: "Tâm bình thế giới bình, vạn sự thuận theo tự nhiên đều an lành.", advice: "Giữ lòng từ bi, thường giúp đỡ mọi người." },
+            { title: "Quẻ Đại Cát - May Mắn", content: "Hồng phúc soi chiếu, công việc thuận lợi, ý nguyện sớm thành.", advice: "Biết ơn và khiêm tốn để giữ vững phước báu." },
+            { title: "Quẻ Trung Cát - Nhẫn Nại", content: "Muốn đạt thành tựu cần có thời gian và lòng kiên trì bền bỉ.", advice: "Chớ vội vàng, tĩnh tâm suy xét trước khi hành động." }
+        ];
+
+        function shakeStick() {
+            const box = document.getElementById('stickBox');
+            const res = document.getElementById('stickResult');
+            const btn = document.getElementById('btnShakeStick');
+            
+            btn.disabled = true;
+            res.classList.add('hidden');
+            box.classList.add('animate-bounce');
+
+            setTimeout(() => {
+                box.classList.remove('animate-bounce');
+                const randomStick = stickList[Math.floor(Math.random() * stickList.length)];
+                document.getElementById('stickTitle').innerText = randomStick.title;
+                document.getElementById('stickContent').innerText = `"${randomStick.content}"`;
+                document.getElementById('stickAdvice').innerText = `Lời khuyên: ${randomStick.advice}`;
+                res.classList.remove('hidden');
+                btn.disabled = false;
+            }, 1200);
+        }
+
+        // Dâng Sớ Cầu An
+        function submitPetition(e) {
             e.preventDefault();
-            alert("Đã gửi đơn báo nghỉ/đổi ca thành công tới Admin Trần Anh Khoa!");
-            e.target.reset();
+            const name = document.getElementById('petitionerName').value;
+            const content = document.getElementById('petitionerContent').value;
+            
+            const list = document.getElementById('petitionList');
+            const item = document.createElement('div');
+            item.className = 'p-2 bg-black/30 rounded border border-amber-900/40 flex justify-between';
+            item.innerHTML = `<span><strong>${name}:</strong> ${content}</span><span class="text-amber-400/60">Vừa xong</span>`;
+            
+            list.prepend(item);
+            closeModal('petitionModal');
+            showFloatingText(window.innerWidth / 2, window.innerHeight / 2, "📜 Đã Dâng Sớ Thành Kính!");
+
+            document.getElementById('petitionerName').value = '';
+            document.getElementById('petitionerContent').value = '';
         }
     </script>
 </body>
